@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">CalendarView</string>
+    <string name="year">年</string>
+    <string name="month">月</string>
+    <string name="day">日</string>
+</resources>
