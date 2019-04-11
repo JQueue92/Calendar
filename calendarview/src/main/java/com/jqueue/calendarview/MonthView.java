@@ -1,157 +1,131 @@
 package com.jqueue.calendarview;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+
 
 import com.jqueue.calendarview.date.DateCell;
-import com.jqueue.formatlog.LogUtils;
 
-import java.util.ArrayList;
-
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-public class MonthView extends FrameLayout {
-    private static final String TAG = "MonthView";
+public class MonthView extends View {
+
     DateCell dateCell;
-    ArrayList<View> children = new ArrayList<>(31);
-    private final ArrayList<View> mMatchParentChildren = new ArrayList<>(1);
     int weeks;
+    int sumDays;
     int firstDayOfWeek;
 
-    OnClickListener dayClickListener;
+    float dayViewHeight;
+    float dayViewWidth;
+    float bottomLineWidth;
+    Paint curDayBgPaint, dayTextPaint, bottomLinePaint;
 
     public void update(DateCell dateCell) {
         this.dateCell = dateCell;
-        weeks = dateCell.getSumWeeksOfMonth();
-        firstDayOfWeek = dateCell.getFirstDayOfWeek();
-        requestLayout();
     }
 
-    public MonthView(@NonNull Context context) {
+    public MonthView(Context context) {
         this(context, null);
     }
 
-    public MonthView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public MonthView(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MonthView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public MonthView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        initData();
-        initChildren();
+        init();
     }
 
-
-    private void initChildren() {
-        for (int index = 0; index < 31; index++) {
-            View v = createDayView();
-            children.add(v);
-            addView(v);
-        }
-    }
-
-    private void initData() {
+    private void init() {
         dateCell = new DateCell();
         dateCell.toCurrentDate();
         weeks = dateCell.getSumWeeksOfMonth();
+        sumDays = dateCell.getSumDays();
         firstDayOfWeek = dateCell.getFirstDayOfWeek();
+
+        dayViewWidth = getResources().getDimension(R.dimen.dayview_width);
+        dayViewHeight = getResources().getDimension(R.dimen.dayview_height);
+
+        curDayBgPaint = new Paint();
+        curDayBgPaint.setColor(Color.RED);
+        curDayBgPaint.setStyle(Paint.Style.FILL);
+        curDayBgPaint.setAntiAlias(true);
+
+        dayTextPaint = new Paint();
+        dayTextPaint.setColor(Color.BLACK);
+        dayTextPaint.setAntiAlias(true);
+        dayTextPaint.setTextSize(getResources().getDimension(R.dimen.day_text_size));
+
+        bottomLinePaint = new Paint();
+        bottomLinePaint.setColor(Color.parseColor("#DCDCDC"));
+        bottomLinePaint.setAntiAlias(true);
+        bottomLinePaint.setStrokeCap(Paint.Cap.ROUND);
+        bottomLineWidth = getResources().getDimension(R.dimen.bottomLineWidth);
+        bottomLinePaint.setStrokeWidth(bottomLineWidth);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
 
-        final boolean measureMatchParentChildren =
-                MeasureSpec.getMode(widthMeasureSpec) != MeasureSpec.EXACTLY ||
-                        MeasureSpec.getMode(heightMeasureSpec) != MeasureSpec.EXACTLY;
-
-        View v = getChildAt(0);
-        int parentWidthMeasureSpecMode = MeasureSpec.getMode(widthMeasureSpec);
-        int parentWidthMeasureSpecSize = MeasureSpec.getSize(widthMeasureSpec);
-        int parentHeightMeasureSpecMode = MeasureSpec.getMode(heightMeasureSpec);
-        int parentHeightMeasureSpecSize = MeasureSpec.getSize(heightMeasureSpec);
-
-        int maxWidth = 0;
-        int maxHeigth = 0;
-        for (int index = 0; index < getChildCount(); index++) {
-            final View child = getChildAt(index);
-            LayoutParams lp = (LayoutParams) child.getLayoutParams();
-            measureChildWithMargins(child,
-                    MeasureSpec.makeMeasureSpec(parentWidthMeasureSpecSize / 7, parentWidthMeasureSpecMode),
-                    0, MeasureSpec.makeMeasureSpec(parentHeightMeasureSpecSize / weeks, parentHeightMeasureSpecMode),
-                    0);
-            maxWidth = Math.max(maxWidth, (child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin) * 7);
-            maxHeigth = Math.max(maxHeigth, (child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin) * weeks);
-            if (measureMatchParentChildren) {
-                if (lp.width == LayoutParams.MATCH_PARENT ||
-                        lp.height == LayoutParams.MATCH_PARENT) {
-                    mMatchParentChildren.add(child);
-                }
-            }
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+        int width;
+        int height;
+        if (widthMode == MeasureSpec.EXACTLY) {
+            width = widthSize;
+        } else {
+            int minWidth = Math.round(dayViewWidth * 7);
+            width = widthSize != 0 ? Math.min(minWidth, widthSize) : Math.round(dayViewWidth * 7);
         }
-        setMeasuredDimension(maxWidth, maxHeigth);
+        if (heightMode == MeasureSpec.EXACTLY) {
+            height = heightSize;
+        } else {
+            int minHeight = Math.round(dayViewHeight * weeks);
+            height = heightSize != 0 ? Math.min(minHeight, heightSize) : minHeight;
+        }
+        setMeasuredDimension(width, height);
     }
 
     @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        LogUtils.d(TAG, "MonthView OnLayout:" + dateCell + "\tl:" + left + "\tt:" + top + "\tr:" + right + "\tb:" + bottom);
-        layoutChildren(left, top, right, bottom);
-    }
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
 
-    private View createDayView() {
-        return LayoutInflater.from(getContext()).inflate(R.layout.day_view, null);
-    }
+        final int saveCount = canvas.getSaveCount();
+        canvas.save();
 
-    private void layoutChildren(int left, int top, int right, int bottom) {
+        canvas.translate(getPaddingLeft(), getPaddingTop());
         for (int week = 0; week < weeks; week++) {
             int count = (week == 0) ? 7 - firstDayOfWeek + 1 : ((week == weeks - 1) ? dateCell.getSumDays() - ((weeks - 2) * 7 + 7 - firstDayOfWeek + 1) : 7);
             for (int index = 0; index < count; index++) {
-                int childIndex = (week == 0) ? index : (week > 1 ? (week - 1) * 7 + 7 - firstDayOfWeek + 1 + index : 7 - firstDayOfWeek + 1 + index);
-                LogUtils.d(TAG, "week:" + (week + 1) + "\tcount:" + count + "\tchildIndex:" + childIndex);
-                View child = getChildAt(childIndex);
-                bindChildView(child, childIndex + 1);
-                LayoutParams lp = (LayoutParams) child.getLayoutParams();
-                int l = 0;
+                String day = String.valueOf(((week == 0) ? index : (week > 1 ? (week - 1) * 7 + 7 - firstDayOfWeek + 1 + index : 7 - firstDayOfWeek + 1 + index)) + 1);
+                float l;
                 if (week == 0 && firstDayOfWeek > 1) {
-                    l = left + getPaddingLeft() + (firstDayOfWeek - 1 + index) * (child.getMeasuredWidth() + lp.leftMargin);
+                    l = getPaddingLeft() + (firstDayOfWeek - 1 + index) * (getMeasuredWidth() / 7.0F/*day_view_width*/);
                 } else {
-                    l = left + getPaddingLeft() + index * (child.getMeasuredWidth() + lp.leftMargin);
+                    l = getPaddingLeft() + index * (getMeasuredWidth() / 7.0F);
                 }
-                int t = top + getPaddingTop() + week * (child.getMeasuredHeight() + lp.topMargin);
-                int r = l + child.getMeasuredWidth();
-                int b = t + child.getMeasuredHeight();
-                LogUtils.d(TAG, "hori-step:" + (child.getMeasuredWidth() + lp.leftMargin));
-                LogUtils.d(TAG, "childIndex:" + childIndex + "\tleft:" + l + "\ttop:" + t + "\tright" + r + "\tbottom:" + b);
-                child.layout(l, t, r, b);
+                float t = getPaddingTop() + week * (getMeasuredHeight() / (float) weeks);
+                float r = l + getMeasuredWidth() / 7.0F;
+                float b = t + getMeasuredHeight() / (float) weeks;
+                if (dateCell.isCurMonth() && Integer.parseInt(day) == dateCell.getCurDay()) {
+                    canvas.drawCircle(l + (r - l) / 2.0F, t + (b - t) / 2.0F, (r - l) / 4.0F, curDayBgPaint);
+                    dayTextPaint.setColor(Color.WHITE);
+                } else {
+                    dayTextPaint.setColor(Color.BLACK);
+                }
+                if (week < weeks - 1) {
+                    canvas.drawLine(l, b, r, b, bottomLinePaint);
+                }
+                canvas.drawText(day, l + (r - l) / 2 - dayTextPaint.measureText(day) / 2, t + (b - t) / 2 + (b - t) / 4 - dayTextPaint.getFontMetrics().bottom, dayTextPaint);
             }
         }
+        canvas.restoreToCount(saveCount);
     }
-
-    private void bindChildView(View child, int day) {
-        ((TextView) child.findViewById(R.id.mainTitle)).setText(String.valueOf(day));
-        if (dayClickListener != null) {
-            child.setOnClickListener(dayClickListener);
-        } else {
-            child.setOnClickListener(defaultClickListener);
-        }
-    }
-
-    public void setOnDayClickListener(OnClickListener clickListener) {
-        dayClickListener = clickListener;
-    }
-
-    private OnClickListener defaultClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Toast.makeText(getContext(),
-                    String.valueOf(dateCell.getYear()) + getContext().getString(R.string.year) + dateCell.getMonth() + getContext().getString(R.string.month) + ((TextView) v.findViewById(R.id.mainTitle)).getText(),
-                    Toast.LENGTH_SHORT).show();
-        }
-    };
 }

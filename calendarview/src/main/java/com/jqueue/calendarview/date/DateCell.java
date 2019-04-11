@@ -9,6 +9,23 @@ public class DateCell {
     int month;
     int sumDays;
 
+    static int curYear,curMonth,curSumdays,curDay;
+
+    static{
+        curYear = Integer.parseInt(DateFormat.format("yyyy", System.currentTimeMillis()).toString());
+        curMonth = Integer.parseInt(DateFormat.format("MM", System.currentTimeMillis()).toString());
+        curDay = Integer.parseInt(DateFormat.format("dd", System.currentTimeMillis()).toString());
+        curSumdays = getDaysOfMonth(curYear, curMonth);
+    }
+
+    public boolean isCurMonth(){
+        return this.year == curYear && this.month == curMonth;
+    }
+
+    public int getCurDay(){
+        return curDay;
+    }
+
     public int getYear() {
         return year;
     }
@@ -51,7 +68,7 @@ public class DateCell {
         return calendar.get(Calendar.DAY_OF_WEEK);
     }
 
-    private int getDaysOfMonth(int year, int moth) {
+    private static int getDaysOfMonth(int year, int moth) {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.YEAR, year);
         c.set(Calendar.MONTH, moth - 1);

@@ -8,4 +8,9 @@
     <dimen name="date_devider_height">20dp</dimen>
     <dimen name="date_devider_paddingleft">10dp</dimen>
     <dimen name="date_divider_textSize">14sp</dimen>
+
+    <dimen name="dayview_height">40dp</dimen>
+    <dimen name="dayview_width">40dp</dimen>
+    <dimen name="day_text_size">16sp</dimen>
+    <dimen name="bottomLineWidth">2dp</dimen>
 </resources>
