@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -31,6 +30,8 @@ public class MonthView extends View {
 
     Paint curDayBgPaint, dayTextPaint, bottomLinePaint;
     HashMap<String, float[]> map = new HashMap<>(31);
+
+    OnClickDayListener listener;
 
     public void update(DateCell dateCell) {
         this.dateCell = dateCell;
@@ -161,7 +162,11 @@ public class MonthView extends View {
                 if (clickPositionX == event.getX() && clickPositionY == event.getY()) {
                     int day = getDayByPosition(clickPositionX, clickPositionY);
                     if (day != 0) {
-                        Toast.makeText(getContext(), dateCell.getYear() + "年" + dateCell.getMonth() + "月" + day + "日", Toast.LENGTH_SHORT).show();
+                        if (listener != null) {
+                            listener.clickDay(dateCell.getYear(), dateCell.getMonth(), day);
+                        } else {
+                            Toast.makeText(getContext(), dateCell.getYear() + "年" + dateCell.getMonth() + "月" + day + "日", Toast.LENGTH_SHORT).show();
+                        }
                         return true;
                     }
                 }
@@ -183,6 +188,14 @@ public class MonthView extends View {
             }
         }
         return 0;
+    }
+
+    public void setOnClickDayListener(OnClickDayListener listener) {
+        this.listener = listener;
+    }
+
+    interface OnClickDayListener {
+        void clickDay(int year, int month, int day);
     }
 
 }
