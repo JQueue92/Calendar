@@ -2,15 +2,14 @@ package com.jqueue.calendarview;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 import com.jqueue.calendarview.date.DateCell;
+import com.jqueue.formatlog.LogUtils;
 
 import java.util.ArrayList;
 
@@ -18,7 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class MonthView extends FrameLayout {
-
+    private static final String TAG = "MonthView";
     DateCell dateCell;
     ArrayList<View> children = new ArrayList<>(31);
     private final ArrayList<View> mMatchParentChildren = new ArrayList<>(1);
@@ -47,7 +46,6 @@ public class MonthView extends FrameLayout {
         initData();
         initChildren();
     }
-
 
 
     private void initChildren() {
@@ -102,7 +100,7 @@ public class MonthView extends FrameLayout {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        Log.d("Wangbin", "MonthView OnLayout:" + dateCell + "\tl:" + left + "\tt:" + top + "\tr:" + right + "\tb:" + bottom);
+        LogUtils.d(TAG, "MonthView OnLayout:" + dateCell + "\tl:" + left + "\tt:" + top + "\tr:" + right + "\tb:" + bottom);
         layoutChildren(left, top, right, bottom);
     }
 
@@ -115,7 +113,7 @@ public class MonthView extends FrameLayout {
             int count = (week == 0) ? 7 - firstDayOfWeek + 1 : ((week == weeks - 1) ? dateCell.getSumDays() - ((weeks - 2) * 7 + 7 - firstDayOfWeek + 1) : 7);
             for (int index = 0; index < count; index++) {
                 int childIndex = (week == 0) ? index : (week > 1 ? (week - 1) * 7 + 7 - firstDayOfWeek + 1 + index : 7 - firstDayOfWeek + 1 + index);
-                Log.d("Wangbin", "week:" + (week + 1) + "\tcount:" + count + "\tchildIndex:" + childIndex);
+                LogUtils.d(TAG, "week:" + (week + 1) + "\tcount:" + count + "\tchildIndex:" + childIndex);
                 View child = getChildAt(childIndex);
                 bindChildView(child, childIndex + 1);
                 LayoutParams lp = (LayoutParams) child.getLayoutParams();
@@ -128,8 +126,8 @@ public class MonthView extends FrameLayout {
                 int t = top + getPaddingTop() + week * (child.getMeasuredHeight() + lp.topMargin);
                 int r = l + child.getMeasuredWidth();
                 int b = t + child.getMeasuredHeight();
-                Log.d("Wangbin", "hori-step:" + (child.getMeasuredWidth() + lp.leftMargin));
-                Log.d("Wangbin", "childIndex:" + childIndex + "\tleft:" + l + "\ttop:" + t + "\tright" + r + "\tbottom:" + b);
+                LogUtils.d(TAG, "hori-step:" + (child.getMeasuredWidth() + lp.leftMargin));
+                LogUtils.d(TAG, "childIndex:" + childIndex + "\tleft:" + l + "\ttop:" + t + "\tright" + r + "\tbottom:" + b);
                 child.layout(l, t, r, b);
             }
         }
@@ -148,11 +146,11 @@ public class MonthView extends FrameLayout {
         dayClickListener = clickListener;
     }
 
-    private OnClickListener defaultClickListener = new View.OnClickListener(){
+    private OnClickListener defaultClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             Toast.makeText(getContext(),
-                    String.valueOf(dateCell.getYear())+getContext().getString(R.string.year)+dateCell.getMonth()+getContext().getString(R.string.month)+((TextView) v.findViewById(R.id.mainTitle)).getText(),
+                    String.valueOf(dateCell.getYear()) + getContext().getString(R.string.year) + dateCell.getMonth() + getContext().getString(R.string.month) + ((TextView) v.findViewById(R.id.mainTitle)).getText(),
                     Toast.LENGTH_SHORT).show();
         }
     };

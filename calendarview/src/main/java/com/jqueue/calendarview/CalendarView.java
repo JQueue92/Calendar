@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,9 +15,9 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-
 import com.jqueue.calendarview.date.DateCell;
 import com.jqueue.calendarview.date.DateSet;
+import com.jqueue.formatlog.LogUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,7 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class CalendarView extends LinearLayout {
-
+    private static  final String TAG = "CalendarView";
     String[] title;
     RecyclerView recyclerView;
     LinearLayoutManager manager;
@@ -53,7 +52,7 @@ public class CalendarView extends LinearLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Log.d("Wangbin", "recyclerView.getTop:" + recyclerView.getTop());
+        LogUtils.d(TAG, "recyclerView.getTop:" + recyclerView.getTop());
     }
 
     private void init(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -121,7 +120,7 @@ public class CalendarView extends LinearLayout {
         @Override
         public void onBindViewHolder(@NonNull VH holder, int position) {
             holder.view.update(dateSet.getDateCellByPosition(position, holder.dateCell));
-            Log.d("Wangbin", "bindView:" + position + "\t" + holder.dateCell);
+            LogUtils.d(TAG, "bindView:" + position + "\t" + holder.dateCell);
             holder.itemView.setTag(holder.dateCell.getYear() + year + holder.dateCell.getMonth() + month);
         }
 
@@ -145,7 +144,7 @@ public class CalendarView extends LinearLayout {
         @Override
         public void onDrawOver(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
             super.onDrawOver(c, parent, state);
-            Log.d("Wangbin", "DrawOver:" + parent.getTop());
+            LogUtils.d(TAG, "DrawOver:" + parent.getTop());
             for (int index = 0; index < parent.getChildCount(); index++) {
                 final View child = parent.getChildAt(index);
                 if (child.getTag() instanceof String) {
