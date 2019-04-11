@@ -5,10 +5,14 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
-
+import android.widget.Toast;
 
 import com.jqueue.calendarview.date.DateCell;
+
+import java.util.HashMap;
 
 import androidx.annotation.Nullable;
 
@@ -22,10 +26,24 @@ public class MonthView extends View {
     float dayViewHeight;
     float dayViewWidth;
     float bottomLineWidth;
+
+    float clickPositionX, clickPositionY;
+
     Paint curDayBgPaint, dayTextPaint, bottomLinePaint;
+    HashMap<String, float[]> map = new HashMap<>(31);
 
     public void update(DateCell dateCell) {
         this.dateCell = dateCell;
+        weeks = dateCell.getSumWeeksOfMonth();
+        sumDays = dateCell.getSumDays();
+        firstDayOfWeek = dateCell.getFirstDayOfWeek();
+        map.clear();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        map.clear();
     }
 
     public MonthView(Context context) {
@@ -124,8 +142,47 @@ public class MonthView extends View {
                     canvas.drawLine(l, b, r, b, bottomLinePaint);
                 }
                 canvas.drawText(day, l + (r - l) / 2 - dayTextPaint.measureText(day) / 2, t + (b - t) / 2 + (b - t) / 4 - dayTextPaint.getFontMetrics().bottom, dayTextPaint);
+                map.put(day, new float[]{l, r, t, b});
             }
         }
         canvas.restoreToCount(saveCount);
     }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                clickPositionX = event.getX();
+                clickPositionY = event.getY();
+                return true;
+            case MotionEvent.ACTION_MOVE:
+                break;
+            case MotionEvent.ACTION_UP:
+                if (clickPositionX == event.getX() && clickPositionY == event.getY()) {
+                    int day = getDayByPosition(clickPositionX, clickPositionY);
+                    if (day != 0) {
+                        Toast.makeText(getContext(), dateCell.getYear() + "年" + dateCell.getMonth() + "月" + day + "日", Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                }
+                break;
+        }
+        return super.onTouchEvent(event);
+    }
+
+    private int getDayByPosition(float x, float y) {
+        if (map.size() == 0) return 0;
+        float[] rectInfo;//[left,right,top,bottom]
+        for (int day = 1; day < 8; day++) {//先确定点击的点在周几
+            rectInfo = map.get(String.valueOf(day));
+            if (x >= rectInfo[0] && x <= rectInfo[1]) {
+                while (rectInfo != null && (y < rectInfo[2] || y > rectInfo[3])) {
+                    rectInfo = map.get(String.valueOf(day += 7));
+                }
+                return day > sumDays ? 0 : day;
+            }
+        }
+        return 0;
+    }
+
 }
