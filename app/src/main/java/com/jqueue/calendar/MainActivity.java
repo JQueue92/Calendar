@@ -1,11 +1,11 @@
 package com.jqueue.calendar;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.widget.LinearLayout;
 
 import com.jqueue.calendarview.CalendarView;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
