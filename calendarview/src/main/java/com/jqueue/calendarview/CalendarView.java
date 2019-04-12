@@ -5,15 +5,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.jqueue.calendarview.date.DateCell;
 import com.jqueue.calendarview.date.DateSet;
@@ -24,16 +20,17 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class CalendarView extends LinearLayout {
-    private static  final String TAG = "CalendarView";
+public class CalendarView extends RecyclerView {
+    private static final String TAG = "CalendarView";
     String[] title;
-    RecyclerView recyclerView;
     LinearLayoutManager manager;
-    Paint dateDeviderPaint, dividerTextPaint;
+    Paint dateDeviderPaint, dividerTextPaint, headerBgPaint, headerTextPaint;
     int scrollThreshold;
     DateSet dateSet;
     String year, month;
     float dividerHeight, deviderPaddingLeft;
+
+    float headerHeight, headerTextSize;
 
     public CalendarView(@NonNull Context context) {
         this(context, null);
@@ -52,21 +49,15 @@ public class CalendarView extends LinearLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        LogUtils.d(TAG, "recyclerView.getTop:" + recyclerView.getTop());
     }
 
     private void init(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        setOrientation(LinearLayout.VERTICAL);
         title = context.getResources().getStringArray(R.array.calendarView_title);
-        recyclerView = new RecyclerView(context);
-        recyclerView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         manager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(manager);
-        recyclerView.setAdapter(adapter);
-        recyclerView.scrollToPosition(adapter.getItemCount() / 1000);
-        recyclerView.addItemDecoration(itemDecoration);
-        addView(createHeadView());
-        addView(recyclerView);
+        setLayoutManager(manager);
+        setAdapter(adapter);
+        scrollToPosition(adapter.getItemCount() / 1000);
+        addItemDecoration(itemDecoration);
     }
 
     private void initData() {
@@ -79,6 +70,18 @@ public class CalendarView extends LinearLayout {
         dividerTextPaint.setColor(Color.BLACK);
         dividerTextPaint.setAntiAlias(true);
         dividerTextPaint.setTextSize(getResources().getDimension(R.dimen.date_divider_textSize));
+
+        headerBgPaint = new Paint();
+        headerBgPaint.setColor(Color.WHITE);
+        headerBgPaint.setStyle(Paint.Style.FILL);
+        headerBgPaint.setAntiAlias(true);
+
+        headerHeight = getResources().getDimension(R.dimen.header_height);
+        headerTextSize = getResources().getDimension(R.dimen.header_text_size);
+        headerTextPaint = new Paint();
+        headerTextPaint.setColor(Color.BLACK);
+        headerTextPaint.setAntiAlias(true);
+        headerTextPaint.setTextSize(headerTextSize);
 
         dividerHeight = getResources().getDimension(R.dimen.date_devider_height);
         deviderPaddingLeft = getResources().getDimension(R.dimen.date_devider_paddingleft);
@@ -139,6 +142,20 @@ public class CalendarView extends LinearLayout {
         @Override
         public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
             super.onDraw(c, parent, state);
+            for (int index = 0; index < parent.getChildCount(); index++) {
+                final View child = parent.getChildAt(index);
+                if (child.getTag() instanceof String && index == 0) {
+                    if (child.getBottom() < parent.getPaddingTop() + dividerHeight && child.getBottom() > parent.getPaddingTop()) {
+                        c.drawRect(child.getLeft(), parent.getPaddingTop(), child.getRight(), child.getBottom(), dateDeviderPaint);
+                        float baseLine = parent.getPaddingTop() + (child.getBottom() - parent.getPaddingTop()) / 2 + (child.getBottom() - parent.getPaddingTop()) / 4 - dividerTextPaint.getFontMetrics().bottom;
+                        if (baseLine > parent.getPaddingTop()) {
+                            c.drawText((String) child.getTag(), deviderPaddingLeft, baseLine, dividerTextPaint);
+                        }
+                        child.setVisibility(View.INVISIBLE);
+                    }
+                    break;
+                }
+            }
         }
 
         @Override
@@ -149,18 +166,17 @@ public class CalendarView extends LinearLayout {
                 final View child = parent.getChildAt(index);
                 if (child.getTag() instanceof String) {
                     if (index == 0) {
-                        if (child.getBottom() > dividerHeight) {
-                            c.drawRect(child.getLeft(), parent.getPaddingTop(), child.getRight(), parent.getPaddingTop()+dividerHeight, dateDeviderPaint);
-                            c.drawText((String) child.getTag(), deviderPaddingLeft, parent.getPaddingTop()+dividerHeight- dividerTextPaint.getFontMetrics().bottom, dividerTextPaint);
-                        } else {
-                            c.drawRect(child.getLeft(), parent.getPaddingTop(), child.getRight(), child.getBottom(), dateDeviderPaint);
-                            c.drawText((String) child.getTag(), deviderPaddingLeft, parent.getPaddingTop() + child.getBottom() - dividerTextPaint.getFontMetrics().bottom , dividerTextPaint);
+                        drawHeader(c, parent);
+                        if (child.getBottom() >= parent.getPaddingTop() + dividerHeight) {
+                            c.drawRect(child.getLeft(), parent.getPaddingTop(), child.getRight(), parent.getPaddingTop() + dividerHeight, dateDeviderPaint);
+                            c.drawText((String) child.getTag(), deviderPaddingLeft, parent.getPaddingTop() + dividerHeight - dividerTextPaint.getFontMetrics().bottom, dividerTextPaint);
                         }
+                        child.setVisibility(View.VISIBLE);
                     } else {
-                        c.drawRect(child.getLeft(), child.getTop() - dividerHeight, child.getRight(), child.getTop() , dateDeviderPaint);
-                        c.drawText((String) child.getTag(), deviderPaddingLeft, child.getTop() - dividerTextPaint.getFontMetrics().bottom, dividerTextPaint);
+                        float top = child.getTop() > headerHeight + dividerHeight ? child.getTop() : headerHeight + dividerHeight;
+                        c.drawRect(child.getLeft(), top - dividerHeight, child.getRight(), top, dateDeviderPaint);
+                        c.drawText((String) child.getTag(), deviderPaddingLeft, top - dividerTextPaint.getFontMetrics().bottom, dividerTextPaint);
                     }
-
                 }
             }
         }
@@ -172,22 +188,20 @@ public class CalendarView extends LinearLayout {
         }
     };
 
-    private View createHeadView() {
-        LinearLayout view = new LinearLayout(getContext());
-        view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        view.setOrientation(LinearLayout.HORIZONTAL);
-        for (String s : title) {
-            TextView textView = new TextView(getContext());
-            textView.setLayoutParams(new LayoutParams(0, 60, 1.0F));
-            textView.setText(s);
-            textView.setTextColor(Color.BLACK);
-            textView.setTextSize(10F);
-            textView.setGravity(Gravity.CENTER);
-            textView.setSingleLine(true);
-            textView.setEllipsize(TextUtils.TruncateAt.END);
-            view.addView(textView);
+    private void drawHeader(Canvas canvas, RecyclerView parent) {
+        canvas.drawRect(parent.getPaddingLeft(), parent.getPaddingTop() - headerHeight,
+                parent.getPaddingLeft() + parent.getWidth() - parent.getPaddingRight(),
+                parent.getPaddingTop(), headerBgPaint);
+        float weekCellwidth = parent.getMeasuredWidth() / 7.0F;
+        for (int week = 0; week < 7; week++) {
+            canvas.drawText(title[week], parent.getPaddingLeft() + week * weekCellwidth + weekCellwidth / 2 - headerTextPaint.measureText(title[week]) / 2,
+                    parent.getPaddingTop() - headerHeight + headerHeight / 2 + headerHeight / 4 - headerTextPaint.getFontMetrics().bottom, headerTextPaint);
         }
-        return view;
+    }
+
+    @Override
+    public int getPaddingTop() {
+        return super.getPaddingTop() + Math.round(headerHeight);
     }
 
     class VH extends RecyclerView.ViewHolder {

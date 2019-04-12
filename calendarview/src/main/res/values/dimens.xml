@@ -13,4 +13,7 @@
     <dimen name="dayview_width">40dp</dimen>
     <dimen name="day_text_size">16sp</dimen>
     <dimen name="bottomLineWidth">2dp</dimen>
+
+    <dimen name="header_height">50dp</dimen>
+    <dimen name="header_text_size">16sp</dimen>
 </resources>
