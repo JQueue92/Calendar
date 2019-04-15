@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
@@ -137,7 +138,7 @@ public class CalendarView extends RecyclerView {
         @Override
         public void onViewDetachedFromWindow(@NonNull VH holder) {
             super.onViewDetachedFromWindow(holder);
-
+            holder.view.onDetachedFromWindow();
         }
 
         @Override
