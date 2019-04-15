@@ -1,2 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <declare-styleable name="CalendarView">
+        <attr name="weeks" format="reference"></attr>
+        <attr name="headerHeight" format="dimension"></attr>
+        <attr name="headerBackground" format="color"></attr>
+        <attr name="headerTextColor" format="color"></attr>
+        <attr name="headerTextSize" format="dimension"></attr>
+        <attr name="lineColor" format="color"></attr>
+        <attr name="lineWidth" format="dimension"></attr>
+        <attr name="dayTextSize" format="dimension"></attr>
+        <attr name="dayTextColor" format="color"></attr>
+        <attr name="curDayTextColor" format="color"></attr>
+        <attr name="curDayTextSize" format="dimension"></attr>
+        <attr name="curDayBackground" format="color"></attr>
+        <attr name="dividerHeight" format="dimension"></attr>
+        <attr name="dividerBackground" format="color"></attr>
+        <attr name="dividerTextColor" format="color"></attr>
+        <attr name="dividerTextSize" format="dimension"></attr>
+        <attr name="dividerTextPaddingLeft" format="dimension"></attr>
+    </declare-styleable>
+</resources>

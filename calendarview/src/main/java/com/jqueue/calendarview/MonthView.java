@@ -32,8 +32,8 @@ public class MonthView extends View {
 
     Paint curDayBgPaint, dayTextPaint, bottomLinePaint;
 
-    int curDayTextColor,commonDayTextColor,bottomLineColor,curDayBackgroundColor;
-    float curDayTextSize,commonDayTextSize;
+    int curDayTextColor, commonDayTextColor, bottomLineColor, curDayBackgroundColor;
+    float curDayTextSize, commonDayTextSize;
 
     HashMap<String, float[]> map = new HashMap<>(31);
     OnClickDayListener listener;
@@ -52,7 +52,7 @@ public class MonthView extends View {
         map.clear();
     }
 
-    public MonthView(Builder builder,Context context){
+    public MonthView(Builder builder, Context context) {
         this(context);
         bottomLineColor = builder.bottomLineColor;
         bottomLineWidth = builder.bottomLineWidth;
@@ -79,17 +79,17 @@ public class MonthView extends View {
 
     public MonthView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context,attrs);
+        init(context, attrs);
     }
 
     private void init(Context context, @Nullable AttributeSet attrs) {
-        setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT));
+        setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         dateCell = new DateCell();
         dateCell.toCurrentDate();
         weeks = dateCell.getSumWeeksOfMonth();
         sumDays = dateCell.getSumDays();
         firstDayOfWeek = dateCell.getFirstDayOfWeek();
-        TypedArray ta = context.obtainStyledAttributes(attrs,R.styleable.CalendarView);
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.CalendarView);
 
         dayViewWidth = getResources().getDimension(R.dimen.dayview_width);
         dayViewHeight = getResources().getDimension(R.dimen.dayview_height);
@@ -97,7 +97,7 @@ public class MonthView extends View {
         curDayTextColor = ta.getColor(R.styleable.CalendarView_curDayTextColor, Color.WHITE);
         commonDayTextColor = ta.getColor(R.styleable.CalendarView_dayTextColor, Color.BLACK);
         curDayTextSize = ta.getDimension(R.styleable.CalendarView_curDayTextSize, getResources().getDimension(R.dimen.day_text_size));
-        commonDayTextSize = ta.getDimension(R.styleable.CalendarView_dayTextSize,getResources().getDimension(R.dimen.day_text_size));
+        commonDayTextSize = ta.getDimension(R.styleable.CalendarView_dayTextSize, getResources().getDimension(R.dimen.day_text_size));
 
         curDayBgPaint = new Paint();
         curDayBackgroundColor = ta.getColor(R.styleable.CalendarView_curDayBackground, Color.RED);
@@ -111,11 +111,11 @@ public class MonthView extends View {
         dayTextPaint.setTextSize(commonDayTextSize);
 
         bottomLinePaint = new Paint();
-        bottomLineColor = ta.getColor(R.styleable.CalendarView_lineColor,Color.parseColor("#DCDCDC"));
+        bottomLineColor = ta.getColor(R.styleable.CalendarView_lineColor, Color.parseColor("#DCDCDC"));
         bottomLinePaint.setColor(bottomLineColor);
         bottomLinePaint.setAntiAlias(true);
         bottomLinePaint.setStrokeCap(Paint.Cap.ROUND);
-        bottomLineWidth = ta.getDimension(R.styleable.CalendarView_lineWidth,getResources().getDimension(R.dimen.bottomLineWidth));
+        bottomLineWidth = ta.getDimension(R.styleable.CalendarView_lineWidth, getResources().getDimension(R.dimen.bottomLineWidth));
         bottomLinePaint.setStrokeWidth(bottomLineWidth);
 
         ta.recycle();
@@ -177,7 +177,7 @@ public class MonthView extends View {
                 if (week < weeks - 1) {
                     canvas.drawLine(l, b, r, b, bottomLinePaint);
                 }
-                canvas.drawText(day, l + (r - l) / 2 - dayTextPaint.measureText(day) / 2, t+(b-t)/2.0F+(dayTextPaint.getFontMetrics().descent - dayTextPaint.getFontMetrics().ascent)/2.0F - dayTextPaint.getFontMetrics().descent, dayTextPaint);
+                canvas.drawText(day, l + (r - l) / 2 - dayTextPaint.measureText(day) / 2, t + (b - t) / 2.0F + (dayTextPaint.getFontMetrics().descent - dayTextPaint.getFontMetrics().ascent) / 2.0F - dayTextPaint.getFontMetrics().descent, dayTextPaint);
                 map.put(day, new float[]{l, r, t, b});
             }
         }
@@ -233,7 +233,7 @@ public class MonthView extends View {
         void clickDay(int year, int month, int day);
     }
 
-    public static class Builder{
+    public static class Builder {
         float bottomLineWidth;
         int curDayTextColor = Color.RED;
         int commonDayTextColor = Color.BLACK;
@@ -243,50 +243,50 @@ public class MonthView extends View {
         int curDayBackgroundColor = Color.RED;
         Context context;
 
-        public Builder(Context context){
+        public Builder(Context context) {
             this.context = context;
             bottomLineWidth = context.getResources().getDimension(R.dimen.bottomLineWidth);
             curDayTextSize = context.getResources().getDimension(R.dimen.day_text_size);
             commonDayTextSize = curDayTextSize;
         }
 
-        public Builder bottomLineColor(int color){
+        public Builder bottomLineColor(int color) {
             bottomLineColor = color;
             return this;
         }
 
-        public Builder bottomLineWidth(float width){
+        public Builder bottomLineWidth(float width) {
             bottomLineWidth = width;
             return this;
         }
 
-        public Builder curDayTextColor(int corlor){
+        public Builder curDayTextColor(int corlor) {
             curDayTextColor = corlor;
             return this;
         }
 
-        public Builder commonDayTextColor(int corlor){
+        public Builder commonDayTextColor(int corlor) {
             commonDayTextColor = corlor;
             return this;
         }
 
-        public Builder curDayTextSize(float size){
+        public Builder curDayTextSize(float size) {
             curDayTextSize = size;
             return this;
         }
 
-        public Builder commonDayTextSize(float size){
+        public Builder commonDayTextSize(float size) {
             commonDayTextSize = size;
             return this;
         }
 
-        public Builder curDayBackgroundColor(int color){
+        public Builder curDayBackgroundColor(int color) {
             curDayBackgroundColor = color;
             return this;
         }
 
-        public MonthView build(){
-            return new MonthView(this,context);
+        public MonthView build() {
+            return new MonthView(this, context);
         }
 
     }
